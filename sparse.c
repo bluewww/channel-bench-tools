@@ -208,8 +208,10 @@ bsc_normalise(bsc_hist_t *H) {
     if(!M->rows) { perror("malloc"); abort(); }
     M->entries= memalign(64, M->nnz * sizeof(float));
     if(!M->entries) { perror("malloc"); abort(); }
-
+    M->row_size = memalign(64, M->nrow * sizeof (uint32_t)); 
+    if (!M->row_size) {perror("malloc"); abort();} 
     i= 0;
+    /*the CSC format is similar with the csr, but easier for column accesses*/
     for(c= 0; c < H->end_col; c++) {
         /* Record the start of column. */
         M->ci[c]= i;
@@ -221,16 +223,22 @@ bsc_normalise(bsc_hist_t *H) {
                 assert(i < M->nnz);
                 assert(0 < H->row_total[r]);
 
-                /* Record row number. */
+                /* Record row number. 
+                 the row number for this entry*/
                 M->rows[i]= r;
                 /* Scale and store count. */
+                /*entries contain the entry value*/
                 M->entries[i]= (float)n / H->row_total[r];
                 /* Increment in destination array. */
                 i++;
             }
         }
     }
+    /*the accumulated number of enteries in each column */
     M->ci[c]= i;
+
+    /*the row size, transfer from bsc format*/
+    memcpy(M->row_size, H->row_total, sizeof (uint32_t) * M->nrow);
 
     return M;
 }
@@ -413,6 +421,8 @@ csc_check(csc_mat_t *M, int verbose) {
         }
     }
     if(!M->entries) FAIL("entries is NULL\n");
+    if(!M->row_size) FAIL("row size is NULL\n");
+
 
     SUCCEED();
 }
@@ -471,6 +481,8 @@ csc_mat_destroy(csc_mat_t *M) {
     free(M->rows);
     assert(M->entries);
     free(M->entries);
+    assert(M->row_size); 
+    free(M->row_size); 
     free(M);
 }
 
@@ -526,6 +538,9 @@ csc_store_binary(csc_mat_t *M, FILE *f) {
     if(fwrite(M->entries, sizeof(float), M->nnz, f)   != M->nnz)
         return E_CSC_ERRNO;
 
+    if (fwrite(M->row_size, sizeof (uint32_t), M->nrow, f) != M->nrow)
+        return E_CSC_ERRNO; 
+
     return E_CSC_SUCCESS;
 }
 
@@ -565,6 +580,10 @@ csc_load_binary(FILE *f, csc_errno_t *e) {
     if(!M->rows) { free(M); *e= E_CSC_ERRNO; return NULL; }
     M->entries= memalign(64, M->nnz * sizeof(int32_t));
     if(!M->entries) { free(M->rows); free(M); *e= E_CSC_ERRNO; return NULL; }
+
+    M->row_size= memalign(64, M->nrow * sizeof(int32_t));
+    if(!M->row_size) { free(M->rows); free(M->entries); free(M); *e= E_CSC_ERRNO; return NULL; }
+
     if(STRIDE_OF(M) > 1) {
         M->si= memalign(64, (M->ncol/STRIDE_OF(M) + 1) * sizeof(int32_t));
         if(!M->si) { free(M->entries); free(M->rows); free(M);
@@ -603,8 +622,11 @@ csc_load_binary(FILE *f, csc_errno_t *e) {
         if(ferror(f)) { *e= E_CSC_ERRNO; return NULL; }
         n+= fread(M->entries, sizeof(float),   M->nnz, f);
         if(ferror(f)) { *e= E_CSC_ERRNO; return NULL; }
-        if(n != M->ncol/STRIDE_OF(M) + 1 + 3 * M->nnz) {
-            free(M->si); free(M->sc); free(M->entries);
+        n += fread(M->row_size, sizeof(uint32_t),   M->nrow,      f);
+        if(ferror(f)) { *e= E_CSC_ERRNO; return NULL; }
+
+        if(n != M->ncol/STRIDE_OF(M) + 1 + 3 * M->nnz + M->nrow) {
+            free(M->si); free(M->sc); free(M->entries); free(M->row_size);
             free(M->rows); free(M);
             *e= E_CSC_TRUNC; return NULL;
         }
@@ -617,12 +639,15 @@ csc_load_binary(FILE *f, csc_errno_t *e) {
         if(ferror(f)) { *e= E_CSC_ERRNO; return NULL; }
         n+= fread(M->entries, sizeof(float),   M->nnz,      f);
         if(ferror(f)) { *e= E_CSC_ERRNO; return NULL; }
-        if(n != M->ncol+1 + 2 * M->nnz) {
-            free(M->ci); free(M->entries);
+        n += fread(M->row_size, sizeof(uint32_t),   M->nrow,      f);
+        if(ferror(f)) { *e= E_CSC_ERRNO; return NULL; }
+ 
+        if(n != M->ncol+1 + 2 * M->nnz + M->nrow) {
+            free(M->ci); free(M->entries); free(M->row_size);
             free(M->rows); free(M); *e= E_CSC_TRUNC; return NULL;
         }
     }
-
+    
     return M;
 }
 

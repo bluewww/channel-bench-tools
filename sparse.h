@@ -85,6 +85,8 @@ typedef struct csc_matrix {
                        (size nnz), NULL if not collision-free. */
 
     float *entries; /* Entry values (size nnz) */
+
+    uint32_t *row_size; /*the size of each row*/ 
 } csc_mat_t;
 
 /* A vector, stored densely. */
