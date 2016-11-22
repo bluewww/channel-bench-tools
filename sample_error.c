@@ -24,7 +24,8 @@
 #include "dSFMT-src-2.2.1/dSFMT.h"
 #include "channel_algorithms.h"
 
-/* Sample from the given distribution. */
+/* Sample from the given distribution. sample the c, the column , 
+ sample the output (colunm value) according to a randomly chosen probablity*/
 int
 sample(dv_t *cp, dsfmt_t *rng) {
     /* Choose x in [0,1). */
@@ -82,7 +83,6 @@ average_cols(csc_mat_t *M) {
     }
     dv_zero(v);
 
-    /* Sum along every column. */
     for(c= 0; c < M->ncol; c++) {
         int64_t i;
 
@@ -92,7 +92,7 @@ average_cols(csc_mat_t *M) {
         }
     }
 
-    /* Rescale to ensure total prob = 1 */
+    /* Rescale to ensure total prob = 1, each entry contains the prob of seeing the colunm value given all the total number of colunm values*/
     for(c= 0; c < v->length; c++) Ps+= v->entries[c];
     for(c= 0; c < v->length; c++) v->entries[c]/= Ps;
 
@@ -111,7 +111,8 @@ accumulate_prob(dv_t *p) {
         perror("dv_new");
         exit(EXIT_FAILURE);
     }
-
+    
+    /*the accumulated probablity of seeing the colunm i, as the colunm values are ordered as the index of the entry*/
     for(i= 0; i < p->length; i++) {
         Pc+= p->entries[i];
         cp->entries[i]= Pc;
@@ -310,6 +311,11 @@ find_binary_cap(dv_t *Pa, dv_t *Pb, float epsilon) {
 
     return Il;
 }
+/*the idea is: if we treat the colunms (outputs) of 
+  all the inputs from the same distribution. We can 
+  randomly select data points from this distribution 
+  then calculate the capacity. if the calculated capacity is 
+   within the sampled capacity, we are highly likely not having a channel */
 
 int
 main(int argc, char *argv[]) {
