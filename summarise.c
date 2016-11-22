@@ -24,6 +24,7 @@ main(int argc, char *argv[]) {
     FILE *oor_log, *mal_log;
     char buf[MAXLINE];
 
+    /*modulation range, result range, log file, malformed logfile*/
     if(argc < 7) {
         fprintf(stderr, "Usage: %s <input min> <input max> "
                 "<output min> <output max> <out of range "
