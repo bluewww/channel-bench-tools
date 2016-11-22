@@ -73,6 +73,7 @@ main(int argc, char *argv[]) {
             if(c > cmax) cmax= c;
         }
     }
+    /*define the number of column and rows*/
     ccount= cmax - cmin + 1;
     if(ncol > ccount) ncol= ccount;
 
@@ -84,6 +85,7 @@ main(int argc, char *argv[]) {
         for(i= M->ci[c]; i < M->ci[c+1]; i++) {
             if(M->entries[i] > 0) {
                 uint64_t r= M->rows[i];
+                /* x cannot be bigger than nrow, y cannot be bigger than ncol*/
                 uint64_t x= (r * nrow) / M->nrow;
                 uint64_t y= ((c-cmin) * ncol) / ccount;
 
@@ -99,9 +101,12 @@ main(int argc, char *argv[]) {
 
     rowbin= M->nrow / nrow;
     colskip= ccount / ncol;
+    /*spanning multiple columns into one, as the result of scaling a large number
+     of data columns into a few columns */
     for(x= xmin; x <= xmax; x++) {
         uint64_t r= ((x * rowbin) + ((x+1) * rowbin -1))/2;
 
+        /*each of the y step skips colskip number of columns*/
         for(y= ymin; y <= ymax; y++) {
             uint64_t c= y * colskip + cmin;
 
