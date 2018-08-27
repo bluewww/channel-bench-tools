@@ -973,7 +973,10 @@ ba_phased(csc_mat_t *Q, float epsilon, float *e_obs) {
         float col_min= INFINITY;
 
         /* If there's a zero in this column, the minimum is zero. */
-        if(Q->ci[col+1] - Q->ci[col+1] < Q->nrow) continue;
+        /*checking the number of the entries stored for this colum is less than 
+         the number of rows, 
+         ie whether zeroes have been left out in the sparse representation*/
+        if(Q->ci[col+1] - Q->ci[col] < Q->nrow) continue;
 
         for(i= Q->ci[col]; i < Q->ci[col+1]; i++) {
             if(Q->entries[i] < col_min)
