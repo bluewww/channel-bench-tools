@@ -30,10 +30,11 @@ main(int argc, char *argv[]) {
     rmax= atoi(argv[4]);
 
     while(fgets(buf, LINE_MAX, stdin)) {
-        if(scanf("%d %d\n", &c, &r) == 2) {
+        if(sscanf(buf,"%d %d\n", &c, &r) == 2) {
             if(cmin <= c && c <= cmax &&
                rmin <= r && r <= rmax) {
                 printf("%d %d\n", c, r);
+                fflush(stdout);
             }
             else discarded++;
         }
