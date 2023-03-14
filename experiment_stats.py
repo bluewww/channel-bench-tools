@@ -1,3 +1,5 @@
+#!/usr/bin/env python2
+
 # experiment_stats.py
 #
 # Calculate statistics for all experimental data found in the given hierarchy.
@@ -6,7 +8,6 @@
 #
 # Copyright 2013, NICTA.  See COPYRIGHT for license details.
 
-#!/usr/bin/env python
 
 import gzip
 import os.path

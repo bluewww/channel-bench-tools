@@ -1,3 +1,5 @@
+#!/usr/bin/env python2
+
 # sim_max.py
 #
 # Find the greatest simulated capacities.
@@ -5,8 +7,6 @@
 # This code is experimental, and error-handling is primitive.
 #
 # Copyright 2013, NICTA.  See COPYRIGHT for license details.
-
-#!/usr/bin/env python
 
 import sys
 

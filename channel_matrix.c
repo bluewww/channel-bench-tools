@@ -28,12 +28,13 @@ main(int argc, char *argv[]) {
     int climit= -1;
     int *counts= NULL;
     int discard= 0;
+    int resolution = 1;
     size_t malformed= 0, out_of_range= 0;
     char buf[MAXLINE];
 
-    if(argc != 2 && argc != 4 && argc != 5 && argc != 6) {
-        printf("Usage: %s <output_filename> [<row. min> <row. max> "
-               "[<count limit> [<discard>]]]\n",
+    if(argc != 2 && argc != 3 && argc != 5 && argc != 6 && argc != 7) {
+        printf("Usage: %s <output_filename> [<resolution [<row. min> <row. max> "
+               "[<count limit> [<discard>]]]]\n",
                 argv[0]);
         return 1;
     }
@@ -44,13 +45,17 @@ main(int argc, char *argv[]) {
         return 1;
     }
 
-    if(argc >= 4) {
-        rmin= atoi(argv[2]);
-        rmax= atoi(argv[3]);
+    if(argc >= 3) {
+        resolution= atoi(argv[2]);
     }
 
     if(argc >= 5) {
-        climit= atoi(argv[4]);
+        rmin= atoi(argv[3]);
+        rmax= atoi(argv[4]);
+    }
+
+    if(argc >= 6) {
+        climit= atoi(argv[5]);
         counts= calloc(rmax - rmin + 1, sizeof(int));
         if(!counts) {
             perror("calloc");
@@ -58,8 +63,8 @@ main(int argc, char *argv[]) {
         }
     }
 
-    if(argc >= 6) {
-        discard= atoi(argv[5]);
+    if(argc >= 7) {
+        discard= atoi(argv[6]);
     }
 
     printf("Building histogram...");
@@ -69,6 +74,8 @@ main(int argc, char *argv[]) {
         int n;
 
         n= sscanf(buf, "%d %d\n", &r, &c);
+
+        c /= resolution;
 
         if(n != 2) {
             malformed++;

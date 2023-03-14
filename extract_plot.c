@@ -56,8 +56,9 @@ main(int argc, char *argv[]) {
     fclose(in);
 
     if(!csc_check(M, 1)) abort();
-    printf("# ");
-    csc_stats(M);
+    // printf("# ");
+    // csc_stats(M);
+    printf("X Y value\n");
 
     if(nrow > M->nrow) nrow= M->nrow;
     

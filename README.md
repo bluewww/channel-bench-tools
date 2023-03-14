@@ -260,3 +260,44 @@ Dependencies
 
 You will need to download a copy of
 [leakiest](http://www.cs.bham.ac.uk/research/projects/infotools/leakiest/).
+
+Example Workflow
+----------------
+
+### 1. Prepare the UART output
+Filter data points in the UART output by removing all other lines. This generates a CSV.
+```
+sed -re '/^[0-9]+\s[0-9]+\s$/!d' screenlog.0 > raw_data.csv
+```
+
+### 2. Create Channel Matrix
+```
+./channel_matrix cm < raw_data.csv
+```
+
+### 3. Extract plot
+```
+./extract_plot cm 1024 1024 > plot
+```
+
+### 4. Render plot
+To open the plot directly in an interactive GUI:
+```
+./plot.py plot <Threshold>
+```
+
+To write the plot into an image file:
+```
+./plot.py plot <Threshold> plot.png
+```
+
+Other image formats can be used as well and are inferred from the suffix of the output file name (e.g. `.tex`)
+
+`Threshold` defines the scale of the color map. A suitable value depends on the specific CM characteristics and can be determied by using the interactive GUI.
+
+### 5. Computing Mutual Information and Zero-Leakage Upper Bound
+```
+./channel_capacity_MI/parseData.py raw_data.csv prepared
+java -jar channel_capacity_MI/leakiest-1.4.7.jar -co prepared
+```
+

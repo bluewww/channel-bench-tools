@@ -1,3 +1,5 @@
+#!/usr/bin/env python2
+
 # confidence_interval.py
 #
 # Find the estimated confidence interval for a given capacity, using the
@@ -7,7 +9,6 @@
 #
 # Copyright 2013, NICTA.  See COPYRIGHT for license details.
 
-#!/usr/bin/env python
 
 import sys
 
